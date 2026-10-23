@@ -1,0 +1,99 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+' Определение актеров
+actor "Администратор отеля" as admin
+actor "Главный администратор" as super_admin
+actor "Клиент" as client
+
+' Наследование: Главный администратор расширяет права Администратора отеля
+super_admin --|> admin
+
+rectangle "HotelBase — Учёт гостиничных номеров" {
+    
+    ' --- Блок Главного администратора ---
+    usecase "Вход в систему (Гл. Админ)" as UC_Login_Super
+    usecase "Управление персоналом" as UC_Staff_Mgmt
+    usecase "Просмотреть системный лог действий" as UC_View_Logs
+    usecase "Зарегистрировать нового пользователя" as UC_Reg_User
+    usecase "Зарегистрировать нового администратора" as UC_Reg_Admin
+
+    ' --- Блок авторизации Администратора отеля ---
+    usecase "Вход в систему (Админ)" as UC_Login_Admin
+    
+    ' Меню бронирований
+    usecase "Меню бронирований" as UC_Menu_Bookings
+    usecase "Фиксация выезда / Освобождение номера" as UC_Check_Out
+    usecase "Оформить бронирование по запросу" as UC_Book_Request
+    usecase "Просмотр всех бронирований" as UC_View_All_Bookings
+    
+    ' Меню клиентов
+    usecase "Меню клиентов" as UC_Menu_Clients
+    usecase "Удаление карточки клиента" as UC_Del_Client
+    usecase "Добавление карточки клиента" as UC_Add_Client
+    usecase "Просмотр клиентов" as UC_View_Clients
+    
+    ' Меню номеров
+    usecase "Меню номеров" as UC_Menu_Rooms
+    usecase "Удаление номера из фонда" as UC_Del_Room
+    usecase "Добавление номера" as UC_Add_Room
+    usecase "Просмотр номеров" as UC_View_Rooms
+    
+    ' --- Блок Клиента ---
+    usecase "Регистрация" as UC_Register
+    usecase "Вход в систему (Клиент)" as UC_Login_Client
+    usecase "Просмотр своих бронирований" as UC_My_Bookings
+    usecase "Бронирование номера" as UC_Book_Room
+    
+    ' --- Детализирующие прецеденты (включения) ---
+    usecase "Выбор дат и категории" as UC_Select_Dates
+    usecase "Ввод параметров номера" as UC_Enter_Room_Params
+    usecase "Выбор конкретного номера" as UC_Select_Room
+}
+
+' --- Связи Главного администратора ---
+super_admin --> UC_Login_Super
+UC_Login_Super --> UC_Staff_Mgmt
+UC_Staff_Mgmt --> UC_View_Logs
+UC_Staff_Mgmt --> UC_Reg_User
+UC_Staff_Mgmt --> UC_Reg_Admin
+
+' --- Связи Администратора отеля ---
+admin --> UC_Login_Admin
+UC_Login_Admin --> UC_Menu_Bookings
+UC_Login_Admin --> UC_Menu_Clients
+UC_Login_Admin --> UC_Menu_Rooms
+
+' Прецеденты Меню бронирований
+UC_Menu_Bookings --> UC_Check_Out
+UC_Menu_Bookings --> UC_Book_Request
+UC_Menu_Bookings --> UC_View_All_Bookings
+
+' Прецеденты Меню клиентов
+UC_Menu_Clients --> UC_Del_Client
+UC_Menu_Clients --> UC_Add_Client
+UC_Menu_Clients --> UC_View_Clients
+
+' Прецеденты Меню номеров
+UC_Menu_Rooms --> UC_Del_Room
+UC_Menu_Rooms --> UC_Add_Room
+UC_Menu_Rooms --> UC_View_Rooms
+
+' --- Связи Клиента ---
+client --> UC_Register
+client --> UC_Login_Client
+UC_Login_Client --> UC_My_Bookings
+UC_Login_Client --> UC_View_Rooms
+UC_Login_Client --> UC_Book_Room
+
+' --- Отношения включения («include») и зависимости ---
+UC_Book_Room ..> UC_View_Rooms : «include»
+UC_Book_Room ..> UC_Select_Room : «include»
+
+UC_Add_Room ..> UC_Select_Dates : «include»
+UC_Add_Room ..> UC_Enter_Room_Params : «include»
+
+UC_View_Rooms ..> UC_View_Clients
+
+@enduml
