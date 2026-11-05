@@ -16,6 +16,7 @@ from ui.client_ui import client_menu
 from ui.utils import safe_int
 
 def main():
+
     print("       Информационная система «HotelBase»         ")
     
 
