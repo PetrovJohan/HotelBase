@@ -250,25 +250,21 @@ hotelbase/
 ## 🚀 Установка и запуск
 
 ### Системные требования
-* **Интерпретатор / Среда:** Python 3.10+
+* **Интерпретатор:** Python 3.10+
 * **Система контроля версий:** Git 2.40+
+* **СУБД:** SQLite 3 (встроена в стандартную библиотеку Python, сторонние серверы не требуются)
 
 ### Инструкция по развёртыванию
 
 1. **Клонировать репозиторий на локальную машину:**
    ```bash
-   git clone https://github.com/RADiant-Git/HotelBase.git
+   git clone https://github.com/PetrovJohan/HotelBase.git
    cd HotelBase
    ```
 
-2. **Инициализировать базу данных тестовыми данными:**
+2. **Запустить информационную систему:**
    ```bash
-   python src/scripts/init_db.py
-   ```
-
-3. **Запустить исходную версию программы:**
-   ```bash
-   python src/main.py
+   python src/infa_laboratornaya/main.py
    ```
 
 ---

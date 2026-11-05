@@ -7,7 +7,7 @@ def hash_pw(password: str) -> str:
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 def authenticate(username: str, password: str) -> User:
-    """Проверка логина и пароля при входе."""
+    """Аутентификация пользователя."""
     if not username.strip():
         raise Exception("Логин не может быть пустым")
     if not password.strip():
@@ -18,14 +18,13 @@ def authenticate(username: str, password: str) -> User:
         raise Exception("Пользователь с таким логином не существует")
 
     pwd_hash = hash_pw(password)
-    # Проверяем хэш, а также открытый пароль (на случай тестовых записей из базы)
     if user.password_hash != pwd_hash and user.password_hash != password:
         raise Exception("Неверный пароль")
 
     return user
 
-def register_client(username: str, password: str, full_name: str, phone: str, email: str, passport_data: str) -> User:
-    """Регистрация нового гостя с валидацией всех данных."""
+def register_client(username: str, password: str, full_name: str, phone: str, email: str, passport_data: str, admin_key: str = "") -> User:
+    """Регистрация пользователя с возможностью получения прав администратора по ключу."""
     username = username.strip()
     full_name = full_name.strip()
     phone = phone.strip()
@@ -36,17 +35,20 @@ def register_client(username: str, password: str, full_name: str, phone: str, em
     if len(password) < 4:
         raise Exception("Пароль должен быть не короче 4 символов")
     if not full_name:
-        raise Exception("ФИО гостя не может быть пустым")
+        raise Exception("ФИО не может быть пустым")
     if len(phone) < 6:
         raise Exception("Номер телефона указан неверно")
     if not passport_data:
-        raise Exception("Паспортные данные обязательны для заселения")
+        raise Exception("Паспортные данные обязательны")
 
     if user_repository.get_by_username(username):
         raise Exception(f"Логин '{username}' уже занят")
     if client_repository.get_by_phone(phone):
-        raise Exception(f"Гость с номером телефона '{phone}' уже зарегистрирован")
+        raise Exception(f"Пользователь с номером телефона '{phone}' уже зарегистрирован")
 
-    user_id = user_repository.create(username, hash_pw(password), role="client")
+    # Секретный ключ для выдачи роли администратора:
+    role = "admin" if admin_key.strip() == "admin2026" else "client"
+
+    user_id = user_repository.create(username, hash_pw(password), role=role)
     client_repository.create(user_id=user_id, full_name=full_name, phone=phone, email=email, passport_data=passport_data)
-    return user_repository.get_by_username(username)    
+    return user_repository.get_by_username(username)
