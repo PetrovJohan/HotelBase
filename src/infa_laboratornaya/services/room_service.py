@@ -1,7 +1,8 @@
+from database.database import get_connection
 from repositories import room_repository
 from models.room import Room
 
-MAX_PRICE_PER_NIGHT = 500000.0  # Максимальная разумная цена за сутки, так-то нет, но кто-то же может позволить (500 тыс. руб.)
+MAX_PRICE_PER_NIGHT = 500000.0  # Потолок цены
 
 def add_room(room_number: str, category_id: int, capacity: int, price_per_night: float) -> Room:
     """Добавление номера с проверкой дубликатов, вместимости и цен."""
@@ -12,8 +13,6 @@ def add_room(room_number: str, category_id: int, capacity: int, price_per_night:
         raise Exception("Вместимость номера должна быть от 1 до 10 человек")
     if price_per_night <= 0:
         raise Exception("Цена за сутки должна быть строго больше нуля")
-    
-    # Потолок цены
     if price_per_night > MAX_PRICE_PER_NIGHT:
         raise Exception(f"Заоблачная цена! Стоимость суток не может превышать {MAX_PRICE_PER_NIGHT:,.0f} руб.")
 
@@ -28,11 +27,9 @@ def get_all_rooms() -> list[Room]:
     return room_repository.get_all()
 
 def change_price(room_id: int, new_price: float):
-    """Изменение суточной цены номера с защитой от заоблачных цен."""
+    """Изменение цены номера."""
     if new_price <= 0:
         raise Exception("Цена должна быть строго больше нуля")
-    
-    #Потолок цены
     if new_price > MAX_PRICE_PER_NIGHT:
         raise Exception(f"Слишком высокая цена! Максимум — {MAX_PRICE_PER_NIGHT:,.0f} руб./сутки")
 
@@ -48,3 +45,24 @@ def toggle_maintenance(room_id: int):
         raise Exception("Комната с таким ID не найдена")
     new_status = "maintenance" if room.status == "available" else "available"
     room_repository.update_status(room_id, new_status)
+
+def delete_room(room_id: int):
+    """Безопасное удаление номера: проверяет брони напрямую без циклических импортов."""
+    room = room_repository.get_by_id(room_id)
+    if not room:
+        raise Exception(f"Номер с ID {room_id} не найден")
+
+    # Проверяем напрямую в базе через быстрый SQL-запрос
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM bookings WHERE room_id = ?", (room_id,))
+    count = cur.fetchone()[0]
+    conn.close()
+
+    if count > 0:
+        raise Exception(
+            f"Невозможно удалить номер {room.room_number}, так как по нему есть история бронирований! "
+            f"Переключите его статус на 'maintenance' (на ремонте) через пункт 4."
+        )
+
+    room_repository.delete(room_id)

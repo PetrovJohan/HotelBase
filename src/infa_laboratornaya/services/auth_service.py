@@ -3,9 +3,11 @@ from repositories import user_repository, client_repository
 from models.user import User
 
 def hash_pw(password: str) -> str:
+    """Хэширование пароля по алгоритму sha256."""
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 def authenticate(username: str, password: str) -> User:
+    """Проверка логина и пароля при входе."""
     if not username.strip():
         raise Exception("Логин не может быть пустым")
     if not password.strip():
@@ -22,47 +24,53 @@ def authenticate(username: str, password: str) -> User:
     return user
 
 def register_client(username: str, password: str, full_name: str, phone: str, email: str, passport_data: str, admin_key: str = "") -> User:
+    """Регистрация пользователя: ВСЕ проверки выполняются ДО записи в БД."""
     username = username.strip()
     full_name = full_name.strip()
     phone = phone.strip()
     email = email.strip()
     passport_data = passport_data.strip()
 
+    # 1. ПРОВЕРКА ЛОГИНА
     if len(username) < 3:
         raise Exception("Логин должен быть не короче 3 символов")
+    if user_repository.get_by_username(username):
+        raise Exception(f"Логин '{username}' уже занят")
+
+    # 2. ПРОВЕРКА ПАРОЛЯ
     if len(password) < 4:
         raise Exception("Пароль должен быть не короче 4 символов")
-    
-    # ЗАЩИТА: ФИО должно содержать хотя бы 2 слова и не состоять из цифр
+
+    # 3. ПРОВЕРКА ФИО
     if len(full_name.split()) < 2:
         raise Exception("Введите полные Фамилию и Имя через пробел")
     if any(char.isdigit() for char in full_name):
         raise Exception("ФИО не может содержать цифры")
 
-    # ЗАЩИТА: Телефон только из цифр(Само собой + допускается в начале, потом просто номер отображается без него)
+    # 4. ПРОВЕРКА ТЕЛЕФОНА
     clean_digits = phone[1:] if phone.startswith("+") else phone
     if not clean_digits.isdigit() or len(clean_digits) < 10 or len(clean_digits) > 15:
         raise Exception("Номер телефона должен содержать от 10 до 15 цифр (допускается '+' в начале)")
+    if client_repository.get_by_phone(phone):
+        raise Exception(f"Пользователь с номером телефона '{phone}' уже зарегистрирован")
 
-    # ЗАЩИТА: Валидация(проуерка) Email (если указан)
+    # 5. ПРОВЕРКА EMAIL
     if email and ("@" not in email or "." not in email or len(email) < 5):
         raise Exception("Некорректный формат адреса электронной почты (пример: guest@mail.ru)")
 
-    #  смотрим паспорт, тобишь считаем, сколько цифр ввёл пользователь
+    # 6. ПРОВЕРКА ПАСПОРТА
     digits_in_passport = sum(c.isdigit() for c in passport_data)
-    
     if digits_in_passport < 6:
         raise Exception("Паспортные данные должны содержать номер документа (минимум 6 цифр)")
     if len(passport_data) > 20:
         raise Exception("Паспортные данные не могут быть длиннее 20 символов")
 
-    if user_repository.get_by_username(username):
-        raise Exception(f"Логин '{username}' уже занят")
-    if client_repository.get_by_phone(phone):
-        raise Exception(f"Пользователь с номером телефона '{phone}' уже зарегистрирован")
 
+    # Только если все а-ля "проверки" прошли, то записываем в БДшку
+   
     role = "admin" if admin_key.strip() == "admin2026" else "client"
 
     user_id = user_repository.create(username, hash_pw(password), role=role)
     client_repository.create(user_id=user_id, full_name=full_name, phone=phone, email=email, passport_data=passport_data)
+    
     return user_repository.get_by_username(username)

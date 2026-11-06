@@ -76,3 +76,11 @@ def update_status(room_id: int, new_status: str):
     cur.execute("UPDATE rooms SET status = ? WHERE room_id = ?", (new_status, room_id))
     conn.commit()
     conn.close()
+
+def delete(room_id: int):
+    """Физическое удаление номера из базы данных."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM rooms WHERE room_id = ?", (room_id,))
+    conn.commit()
+    conn.close()
