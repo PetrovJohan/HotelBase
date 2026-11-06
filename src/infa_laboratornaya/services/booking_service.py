@@ -11,19 +11,19 @@ def _parse_date(date_str: str) -> datetime.date:
 
 def create_booking(user_id: int, room_id: int, check_in_str: str, check_out_str: str) -> Booking:
     """Создание бронирования с защитой от пересечения дат (овербукинга)."""
-    # 1. Проверяем, существует ли профиль гостя
+    # 1. Проверяем, существует ли профиль гостя(на всякий пожарный)
     client = client_repository.get_by_user_id(user_id)
     if not client:
         raise Exception("Профиль гостя не найден. Пожалуйста, обратитесь к администратору.")
 
-    # 2. Проверяем, существует ли комната и свободна ли она
+    # 2. Проверяем, существует ли комната и свободна ли она(ну чисто чтобы статус показать)
     room = room_repository.get_by_id(room_id)
     if not room:
         raise Exception("Выбранный номер отеля не найден")
     if room.status != "available":
         raise Exception(f"Номер {room.room_number} сейчас недоступен (статус: {room.status})")
 
-    # 3. Валидация дат
+    #  Валидация(тобишь проверка) дат
     check_in = _parse_date(check_in_str)
     check_out = _parse_date(check_out_str)
     today = datetime.now().date()
