@@ -34,6 +34,8 @@ def register_client(username: str, password: str, full_name: str, phone: str, em
     # 1. ПРОВЕРКА ЛОГИНА
     if len(username) < 3:
         raise Exception("Логин должен быть не короче 3 символов")
+    if " " in username:
+        raise Exception("Логин не должен содержать пробелы")
     if user_repository.get_by_username(username):
         raise Exception(f"Логин '{username}' уже занят")
 
@@ -65,9 +67,7 @@ def register_client(username: str, password: str, full_name: str, phone: str, em
     if len(passport_data) > 20:
         raise Exception("Паспортные данные не могут быть длиннее 20 символов")
 
-
-    # Только если все а-ля "проверки" прошли, то записываем в БДшку
-   
+    # === СОХРАНЕНИЕ В БАЗУ ДАННЫХ ===
     role = "admin" if admin_key.strip() == "admin2026" else "client"
 
     user_id = user_repository.create(username, hash_pw(password), role=role)
