@@ -13,7 +13,7 @@ def show_all_rooms():
         print(f"{r.room_id:<4} | {r.room_number:<7} | {cat:<15} | {r.capacity:<6} | {r.price_per_night:<12.2f} | {r.status}")
 
 def show_all_bookings():
-    """Вывод полного журнала бронирований отеля."""
+    """Журнал брони отеля."""
     bookings = booking_service.get_all_bookings()
     print("\n--- Журнал бронирований отеля ---")
     if not bookings:
@@ -25,7 +25,7 @@ def show_all_bookings():
         print(f"{b.booking_id:<4} | {b.client_name:<20} | {b.room_number:<6} | {b.check_in_date:<11} | {b.check_out_date:<11} | {b.total_price:<9.2f} | {b.status}")
 
 def admin_menu(user: User):
-    """Главный бесконечный цикл меню администратора."""
+    """Менюшка Админ-а."""
     while True:
         role_name = "Администратора" if user.role == "admin" else "Сотрудника"
         print(f"\n===== Панель {role_name} ({user.username}) =====")

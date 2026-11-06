@@ -39,12 +39,12 @@ def register_client(username: str, password: str, full_name: str, phone: str, em
     if any(char.isdigit() for char in full_name):
         raise Exception("ФИО не может содержать цифры")
 
-    # ЗАЩИТА: Телефон только из цифр
+    # ЗАЩИТА: Телефон только из цифр(Само собой + допускается в начале, потом просто номер отображается без него)
     clean_digits = phone[1:] if phone.startswith("+") else phone
     if not clean_digits.isdigit() or len(clean_digits) < 10 or len(clean_digits) > 15:
         raise Exception("Номер телефона должен содержать от 10 до 15 цифр (допускается '+' в начале)")
 
-    # ЗАЩИТА: Валидация Email (если указан)
+    # ЗАЩИТА: Валидация(проуерка) Email (если указан)
     if email and ("@" not in email or "." not in email or len(email) < 5):
         raise Exception("Некорректный формат адреса электронной почты (пример: guest@mail.ru)")
 
