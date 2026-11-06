@@ -48,8 +48,13 @@ def register_client(username: str, password: str, full_name: str, phone: str, em
     if email and ("@" not in email or "." not in email or len(email) < 5):
         raise Exception("Некорректный формат адреса электронной почты (пример: guest@mail.ru)")
 
-    if len(passport_data) < 5:
-        raise Exception("Паспортные данные должны содержать не менее 5 знаков")
+    #  смотрим паспорт, тобишь считаем, сколько цифр ввёл пользователь
+    digits_in_passport = sum(c.isdigit() for c in passport_data)
+    
+    if digits_in_passport < 6:
+        raise Exception("Паспортные данные должны содержать номер документа (минимум 6 цифр)")
+    if len(passport_data) > 20:
+        raise Exception("Паспортные данные не могут быть длиннее 20 символов")
 
     if user_repository.get_by_username(username):
         raise Exception(f"Логин '{username}' уже занят")

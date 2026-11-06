@@ -29,8 +29,8 @@ def safe_int(prompt: str, min_val: int = None, max_val: int = None) -> int:
         except ValueError:
             print("⚠️ Ошибка: введите целое число (цифрами, без букв).")
 
-def safe_float(prompt: str, min_val: float = None) -> float:
-    """Безопасный ввод цены: принимает запятые и точки."""
+def safe_float(prompt: str, min_val: float = None, max_val: float = None) -> float:
+    """Безопасный ввод цены с защитой от отрицательных и заоблачных чисел."""
     while True:
         raw = safe_str(prompt).replace(",", ".")
         try:
@@ -38,9 +38,12 @@ def safe_float(prompt: str, min_val: float = None) -> float:
             if min_val is not None and val < min_val:
                 print(f"⚠️ Значение должно быть не меньше {min_val}.")
                 continue
+            if max_val is not None and val > max_val:
+                print(f"⚠️ Слишком большая сумма! Значение должно быть не больше {max_val:,.0f} руб.")
+                continue
             return val
         except ValueError:
-            print("⚠️ Ошибка: введите число (например: 2500 или 1800.50).")
+            print("⚠️ Ошибка: введите корректное число (например: 2500 или 1800.50).")
 
 def safe_date(prompt: str) -> str:
     """Безопасный ввод даты: проверяет формат ГГГГ-ММ-ДД."""
