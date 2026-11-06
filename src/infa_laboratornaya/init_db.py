@@ -35,7 +35,7 @@ def init_database():
     cursor.executescript(schema_sql)
     print("Таблицы успешно созданы.")
 
-    # 2. Добавление тестовых данных
+    # 2. Добавление тестовых данных для проверки
 
     # USERS
     users_data = [
@@ -85,7 +85,7 @@ def init_database():
         rooms_data,
     )
 
-    # BOOKINGS
+    # Броня
     bookings_data = [
         (1, 1, "2026-10-20", "2026-10-25", 17500.00, "confirmed"),
         (3, 2, "2026-10-22", "2026-10-26", 23200.00, "confirmed"),
@@ -100,7 +100,7 @@ def init_database():
     conn.commit()
     print(f"Тестовые данные успешно добавлены в {DB_NAME}!\n")
 
-    # 3. Проверка (JOIN-запрос)
+    # 3. Проверка (JOIN(присоединение)-запрос)
     print("=== Активные бронирования (Проверка связей) ===")
     cursor.execute("""
         SELECT 

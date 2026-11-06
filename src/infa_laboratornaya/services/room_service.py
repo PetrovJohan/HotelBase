@@ -16,7 +16,7 @@ def add_room(room_number: str, category_id: int, capacity: int, price_per_night:
     if price_per_night > MAX_PRICE_PER_NIGHT:
         raise Exception(f"Заоблачная цена! Стоимость суток не может превышать {MAX_PRICE_PER_NIGHT:,.0f} руб.")
 
-    # Проверка существования категории в БД (защита от Foreign Key ошибки)
+    # Проверка существования категории в БД
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT category_id FROM room_categories WHERE category_id = ?", (category_id,))
@@ -36,7 +36,7 @@ def get_all_rooms() -> list[Room]:
     return room_repository.get_all()
 
 def change_price(room_id: int, new_price: float):
-    """Изменение суточной цены номера."""
+    """Изменение суточной цены номера с защитой от ввода той же цены."""
     if new_price <= 0:
         raise Exception("Цена должна быть строго больше нуля")
     if new_price > MAX_PRICE_PER_NIGHT:
@@ -45,7 +45,36 @@ def change_price(room_id: int, new_price: float):
     room = room_repository.get_by_id(room_id)
     if not room:
         raise Exception("Комната с таким ID не найдена")
+
+    # ЗАЩИТА: Нельзя менять цену на ту же самую!
+    if room.price_per_night == new_price:
+        raise Exception(f"Цена номера {room.room_number} уже равна {new_price:.2f} руб./сутки! Новая цена должна отличаться.")
+
     room_repository.update_price(room_id, new_price)
+
+def set_room_status(room_id: int, status_code: int):
+    """Установка конкретного статуса с защитой от смены на тот же самый."""
+    room = room_repository.get_by_id(room_id)
+    if not room:
+        raise Exception(f"Комната с ID {room_id} не найдена")
+
+    status_map = {
+        1: "available",
+        2: "occupied",
+        3: "maintenance"
+    }
+
+    if status_code not in status_map:
+        raise Exception("Некорректный код статуса! Выберите 1 (available), 2 (occupied) или 3 (maintenance).")
+
+    new_status = status_map[status_code]
+
+    # ЗАЩИТА: Нельзя менять статус на тот же самый!
+    if room.status == new_status:
+        raise Exception(f"Номер {room.room_number} уже имеет статус '{new_status}'! Выберите другой статус.")
+
+    room_repository.update_status(room_id, new_status)
+    return new_status
 
 def toggle_maintenance(room_id: int):
     """Переключение статуса (Доступен <-> На ремонте)."""

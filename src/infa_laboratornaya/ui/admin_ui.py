@@ -43,11 +43,11 @@ def admin_menu(user: User):
     """Главный цикл меню администратора."""
     while True:
         role_name = "Администратора" if user.role == "admin" else "Сотрудника"
-        print(f"\n===== Панель {role_name} ({user.username}) =====")
+        print(f"\n Панель {role_name} ({user.username}) ")
         print("1. Просмотр всех номеров")
         print("2. Добавить новый номер")
         print("3. Изменить стоимость суток проживания")
-        print("4. Переключить статус номера (available / maintenance)")
+        print("4. Изменить статус номера (available / occupied / maintenance)")
         print("5. Просмотр всех бронирований отеля")
         print("6. Завершить бронирование (гость выехал)")
         print("7. Отменить бронирование")
@@ -78,10 +78,16 @@ def admin_menu(user: User):
 
             elif choice == 4:
                 show_all_rooms(pause=False)
-                r_id = safe_int("Введите ID номера: ", min_val=1)
-                room_service.toggle_maintenance(r_id)
-                print("✅ Статус номера переключен!")
-                input("\nНажмите Enter для продолжения...")
+                r_id = safe_int("Введите ID номера для изменения статуса (0 - назад): ", min_val=0)
+                if r_id > 0:
+                    print("\nВыберите новый статус номера:")
+                    print("1. available (Свободен / доступен для бронирования)")
+                    print("2. occupied (Занят / гость проживает)")
+                    print("3. maintenance (На ремонте / санобработке)")
+                    st_code = safe_int("Введите номер статуса (1-3): ", min_val=1, max_val=3)
+                    new_st = room_service.set_room_status(r_id, st_code)
+                    print(f"✅ Статус номера успешно изменён на '{new_st}'!")
+                    input("\nНажмите Enter для продолжения...")
 
             elif choice == 5:
                 show_all_bookings(pause=True)
